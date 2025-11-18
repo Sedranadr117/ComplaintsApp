@@ -10,10 +10,7 @@ class SecureStorageHelper {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   /// Save data (String, bool, int, double, map, list)
-  Future<void> saveData({
-    required String key,
-    required dynamic value,
-  }) async {
+  Future<void> saveData({required String key, required dynamic value}) async {
     if (value is String) {
       await _storage.write(key: key, value: value);
     } else {

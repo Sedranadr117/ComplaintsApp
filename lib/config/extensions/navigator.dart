@@ -3,16 +3,14 @@ import 'package:flutter/material.dart';
 extension NavigatorExtension on BuildContext {
   // Push صفحة جديدة
   Future<T?> pushPage<T>(Widget page) {
-    return Navigator.of(this).push<T>(
-      MaterialPageRoute(builder: (_) => page),
-    );
+    return Navigator.of(this).push<T>(MaterialPageRoute(builder: (_) => page));
   }
 
   // Push واستبدال الصفحة الحالية
   Future<T?> pushReplacementPage<T, TO>(Widget page) {
-    return Navigator.of(this).pushReplacement<T, TO>(
-      MaterialPageRoute(builder: (_) => page),
-    );
+    return Navigator.of(
+      this,
+    ).pushReplacement<T, TO>(MaterialPageRoute(builder: (_) => page));
   }
 
   // Pop الصفحة الحالية

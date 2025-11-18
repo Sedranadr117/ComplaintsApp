@@ -2,7 +2,6 @@ import 'package:complaint_app/config/themes/app_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
-
 class CommonWidgets {
   static Widget buildErrorWidget({
     required BuildContext context,
@@ -16,10 +15,7 @@ class CommonWidgets {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'Error',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text('Error', style: Theme.of(context).textTheme.titleLarge),
           SizedBox(height: 2.h),
           Text(
             errorMessage,
@@ -27,10 +23,7 @@ class CommonWidgets {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 2.h),
-          ElevatedButton(
-            onPressed: onPressed,
-            child: Text('Retry'),
-          ),
+          ElevatedButton(onPressed: onPressed, child: Text('Retry')),
         ],
       ),
     );
@@ -117,9 +110,7 @@ class CommonWidgets {
     );
   }
 
-  static Widget buildRequiredWidget({
-    required BuildContext context,
-  }) {
+  static Widget buildRequiredWidget({required BuildContext context}) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(3.w),
@@ -138,11 +129,10 @@ class CommonWidgets {
           SizedBox(width: 2.w),
           Expanded(
             child: Text(
-              'All fields marked with * are required. Make sure to double-check the information before saving'
-                  ,
+              'All fields marked with * are required. Make sure to double-check the information before saving',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ],

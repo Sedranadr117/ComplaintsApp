@@ -6,11 +6,7 @@ class TabItem {
   final IconData? icon;
   final Widget? child;
 
-  const TabItem({
-    required this.label,
-    this.icon,
-    this.child,
-  });
+  const TabItem({required this.label, this.icon, this.child});
 }
 
 class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
@@ -65,7 +61,8 @@ class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
         isScrollable: isScrollable,
         indicatorColor: indicatorColor ?? colorScheme.primary,
         labelColor: labelColor ?? colorScheme.primary,
-        unselectedLabelColor: unselectedLabelColor ??
+        unselectedLabelColor:
+            unselectedLabelColor ??
             colorScheme.onSurface.withValues(alpha: 0.6),
         indicatorWeight: indicatorWeight ?? 3.0,
         indicatorSize: indicatorSize ?? TabBarIndicatorSize.label,
@@ -103,10 +100,7 @@ class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (tab.icon != null) ...[
-              Icon(
-                tab.icon,
-                size: 20,
-              ),
+              Icon(tab.icon, size: 20),
               SizedBox(width: 8),
             ],
             Flexible(

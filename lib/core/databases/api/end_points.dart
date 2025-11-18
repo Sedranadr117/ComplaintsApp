@@ -6,7 +6,10 @@ class EndPoints {
   // Auth endpoints
   static const String addPharmacy = "pharmacy/complete-registration";
   static const String mangerLogin = "pharmacy/login";
-    static const String getAreas = "areas";
+  static const String getAreas = "areas";
+
+  //Complaint
+  static const String addComplaint = "complaints";
 }
 
 class ApiKeys {

@@ -5,5 +5,4 @@ class Assets {
   /// Assets for assetsImagesImgAppLogo
   /// assets/images/img_app_logo.svg
   static const String assetsImagesImgAppLogo = "assets/images/img_app_logo.svg";
-
 }

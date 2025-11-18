@@ -29,8 +29,11 @@ class NetworkInfoImpl implements NetworkInfo {
 
         // Fallback: try to connect to a known IP
         try {
-          final socket = await Socket.connect('8.8.8.8', 53,
-              timeout: const Duration(seconds: 5));
+          final socket = await Socket.connect(
+            '8.8.8.8',
+            53,
+            timeout: const Duration(seconds: 5),
+          );
           await socket.close();
           print('📡 Internet connectivity confirmed via socket test');
           return true;

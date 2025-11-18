@@ -12,7 +12,6 @@ class AuthParams {
   final String? lastName;
   final String? role;
 
-
   AuthParams({
     this.id,
     this.email,
@@ -23,8 +22,37 @@ class AuthParams {
   });
 }
 
+class AddComplaintParams {
+  final String complaintType;
+  final String governorate;
+  final String governmentAgency;
+  final String location;
+  final String description;
+  final String solutionSuggestion;
+  final int citizenId;
+  final List<String> attachments;
 
+  const AddComplaintParams({
+    required this.complaintType,
+    required this.governorate,
+    required this.governmentAgency,
+    required this.location,
+    required this.description,
+    required this.solutionSuggestion,
+    required this.citizenId,
+    required this.attachments,
+  });
 
-
-
-
+  Map<String, dynamic> toJson() {
+    return {
+      "complaintType": complaintType,
+      "governorate": governorate,
+      "governmentAgency": governmentAgency,
+      "location": location,
+      "description": description,
+      "solutionSuggestion": solutionSuggestion,
+      "citizenId": citizenId,
+      "attachments": attachments,
+    };
+  }
+}
