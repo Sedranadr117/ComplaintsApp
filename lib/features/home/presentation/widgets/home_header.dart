@@ -2,9 +2,7 @@ import 'package:complaint_app/config/themes/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key, required this.onAddComplaintTap});
-
-  final VoidCallback onAddComplaintTap;
+  const HomeHeader({super.key});
 
   @override
   Widget build(BuildContext context) {

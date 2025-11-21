@@ -1,3 +1,4 @@
+import 'package:complaint_app/config/themes/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -18,30 +19,51 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
+    final borderRadius = BorderRadius.circular(8);
+    final borderColor = AppColors.primaryColor;
 
-      decoration: InputDecoration(
-        suffixIcon: isIcon == true
-            ? Icon(icon, color: Theme.of(context).primaryColor)
-            : null,
-        filled: true,
-        fillColor: Colors.transparent,
-        hint: Text(label, style: TextStyle(color: Theme.of(context).hintColor)),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 12,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        /// Label فوق الحقل
+        Text(
+          label != 'اقترح حلاً' ? "$label *" : label,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
         ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: Theme.of(context).primaryColor,
-            width: 1.5,
+        const SizedBox(height: 6),
+
+        /// الحقل نفسه
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          decoration: InputDecoration(
+            hintText: label,
+            hintStyle: TextStyle(
+              color: Theme.of(context).hintColor,
+              fontSize: 14,
+            ),
+            filled: true,
+            fillColor: Colors.transparent,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+            suffixIcon: isIcon == true
+                ? Icon(icon, color: Theme.of(context).primaryColor)
+                : null,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: borderRadius,
+              borderSide: BorderSide(color: borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: borderRadius,
+              borderSide: BorderSide(color: Theme.of(context).primaryColor),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

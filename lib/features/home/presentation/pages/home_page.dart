@@ -1,12 +1,35 @@
 import 'package:complaint_app/config/extensions/navigator.dart';
+import 'package:complaint_app/core/connection/network_info.dart';
+import 'package:complaint_app/core/databases/api/dio_consumer.dart';
+import 'package:complaint_app/features/complaints/data/datasources/complaints_remote_data_source.dart';
+import 'package:complaint_app/features/complaints/data/repositories/complaints_repository_impl.dart';
+import 'package:complaint_app/features/complaints/domain/usecases/add_complaints.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/add_complaint_bloc.dart';
 import 'package:complaint_app/features/complaints/presentation/pages/add_complaints_page.dart';
 import 'package:complaint_app/features/home/presentation/widgets/home_header.dart';
 import 'package:complaint_app/features/home/presentation/widgets/recent_complaint_tile.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
+
+  Widget _buildAddComplaintPage() {
+    final apiConsumer = DioConsumer(dio: Dio());
+    final remoteDataSource = ComplaintsRemoteDataSource(api: apiConsumer);
+    final repository = ComplaintRepositoryImpl(
+      remoteDataSource: remoteDataSource,
+      networkInfo: NetworkInfoImpl(),
+    );
+    final addComplaintUseCase = AddComplaint(repository: repository);
+
+    return BlocProvider(
+      create: (_) => AddComplaintBloc(addComplaintUseCase: addComplaintUseCase),
+      child: const AddComplaintsPage(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,16 +74,7 @@ class HomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              HomeHeader(
-                onAddComplaintTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const AddComplaintsPage(),
-                    ),
-                  );
-                },
-              ),
-
+              HomeHeader(),
               const SizedBox(height: 24),
               Text('آخر الشكاوى المضافة', style: theme.textTheme.titleLarge),
               const SizedBox(height: 12),
@@ -81,7 +95,7 @@ class HomePage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          context.pushPage(AddComplaintsPage());
+          context.pushPage(_buildAddComplaintPage());
         },
         shape: CircleBorder(),
         child: Icon(Icons.add),

@@ -1,7 +1,11 @@
+import 'package:complaint_app/config/extensions/navigator.dart';
+import 'package:complaint_app/core/params/params.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/add_complaint_bloc.dart';
 import 'package:complaint_app/features/complaints/presentation/bloc/dropdown_cubit.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/custome_text_filed.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/drop_menue_widget.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/file_picker_widget.dart';
+import 'package:complaint_app/features/home/presentation/pages/home_page.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -80,6 +84,9 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
   ];
 
   PlatformFile? selectedFile;
+  String? selectedType;
+  String? selectedGovernorate;
+  String? selectedAgency;
 
   @override
   Widget build(BuildContext context) {
@@ -92,94 +99,157 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            child: Column(
-              children: [
-                BlocProvider(
-                  create: (_) => DropdownCubit<String>(),
-                  child: CustomDropdown<String>(
-                    label: 'اختر نوع الشكوى',
-                    items: types,
-                    onSelect: (item) {
-                      print('تم اختيار: $item');
-                    },
+      body: BlocConsumer<AddComplaintBloc, AddComplaintState>(
+        listener: (context, state) {
+          if (state is AddComplaintSuccess) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('تم إرسال الشكوى بنجاح!')));
+            locationComplaintController.clear();
+            discriptionComplaintController.clear();
+            solutionComplaintController.clear();
+            setState(() {
+              selectedFile = null;
+              selectedType = null;
+              selectedGovernorate = null;
+              selectedAgency = null;
+            });
+            context.popPage(HomePage());
+          } else if (state is AddComplaintError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('حدث خطأ: ${state.message}')),
+            );
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is AddComplaintLoading;
+
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  child: Column(
+                    children: [
+                      // الـ dropdowns والـ textfields كما هي
+                      BlocProvider(
+                        create: (_) => DropdownCubit<String>(),
+                        child: CustomDropdown<String>(
+                          label: 'اختر نوع الشكوى',
+                          items: types,
+                          onSelect: (item) => selectedType = item,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      BlocProvider(
+                        create: (_) => DropdownCubit<String>(),
+                        child: CustomDropdown<String>(
+                          label: 'اختر المحافظة',
+                          items: governorates,
+                          onSelect: (item) => selectedGovernorate = item,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      BlocProvider(
+                        create: (_) => DropdownCubit<String>(),
+                        child: CustomDropdown<String>(
+                          label: 'اختر الجهة الحكومية',
+                          items: governmentAgencies,
+                          onSelect: (item) => selectedAgency = item,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      CustomTextField(
+                        label: 'ادخل موقع الشكوى',
+                        controller: locationComplaintController,
+                        isIcon: true,
+                        icon: Icons.location_on,
+                      ),
+                      SizedBox(height: 20),
+                      CustomTextField(
+                        maxLines: 5,
+                        label: 'ادخل وصف الشكوى',
+                        controller: discriptionComplaintController,
+                      ),
+                      SizedBox(height: 20),
+                      CustomTextField(
+                        label: 'اقترح حلاً',
+                        controller: solutionComplaintController,
+                      ),
+                      SizedBox(height: 20),
+                      FilePickerWidget(
+                        label: selectedFile == null
+                            ? "اختر ملف (صورة أو PDF)"
+                            : selectedFile!.name,
+                        onFilePicked: (file) {
+                          setState(() => selectedFile = file);
+                        },
+                      ),
+                      SizedBox(height: 25),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  if (selectedType == null ||
+                                      selectedGovernorate == null ||
+                                      selectedAgency == null ||
+                                      locationComplaintController
+                                          .text
+                                          .isEmpty ||
+                                      discriptionComplaintController
+                                          .text
+                                          .isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "يرجى تعبئة جميع الحقول المطلوبة",
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  final params = AddComplaintParams(
+                                    complaintType: selectedType!,
+                                    governorate: selectedGovernorate!,
+                                    governmentAgency: selectedAgency!,
+                                    location: locationComplaintController.text
+                                        .trim(),
+                                    description: discriptionComplaintController
+                                        .text
+                                        .trim(),
+                                    solutionSuggestion:
+                                        solutionComplaintController.text.trim(),
+                                    citizenId: 1,
+                                    attachments: selectedFile?.path != null
+                                        ? [selectedFile!.path!]
+                                        : [],
+                                  );
+
+                                  context.read<AddComplaintBloc>().add(
+                                    SendComplaintEvent(params),
+                                  );
+                                },
+                          child: Text("إرسال الشكوى"),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 20),
-                BlocProvider(
-                  create: (_) => DropdownCubit<String>(),
-
-                  child: CustomDropdown<String>(
-                    label: 'اختر المحافظة',
-
-                    items: governorates,
-                    onSelect: (item) {
-                      print('تم اختيار: $item');
-                    },
+              ),
+              if (isLoading)
+                Container(
+                  color: Colors.black.withOpacity(0.5),
+                  child: Center(
+                    child: CircularProgressIndicator(color: Colors.white),
                   ),
                 ),
-                SizedBox(height: 20),
-                BlocProvider(
-                  create: (_) => DropdownCubit<String>(),
-
-                  child: CustomDropdown<String>(
-                    label: 'اختر الجهة الحكومية',
-
-                    items: governmentAgencies,
-                    onSelect: (item) {
-                      print('تم اختيار: $item');
-                    },
-                  ),
-                ),
-                SizedBox(height: 20),
-
-                CustomTextField(
-                  label: 'ادخل موقع الشكوى',
-                  controller: locationComplaintController,
-                  isIcon: true,
-                  icon: Icons.location_on,
-                ),
-                SizedBox(height: 20),
-                CustomTextField(
-                  maxLines: 5,
-                  label: 'ادخل وصف الشكوى',
-                  controller: discriptionComplaintController,
-                ),
-                SizedBox(height: 20),
-
-                CustomTextField(
-                  label: 'اقترح حلاً',
-                  controller: solutionComplaintController,
-                ),
-                SizedBox(height: 20),
-
-                FilePickerWidget(
-                  label: selectedFile == null
-                      ? "اختر ملف (صورة أو PDF)"
-                      : selectedFile!.name,
-                  onFilePicked: (file) {
-                    setState(() {
-                      selectedFile = file;
-                    });
-                  },
-                ),
-                SizedBox(height: 25),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text("إرسال الشكوى"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+            ],
+          );
+        },
       ),
     );
   }

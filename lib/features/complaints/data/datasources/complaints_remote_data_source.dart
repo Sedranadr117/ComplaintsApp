@@ -18,6 +18,8 @@ class ComplaintsRemoteDataSource {
       EndPoints.addComplaint,
       data: complaint.toJson(),
     );
+
+    print(complaint.toJson());
     final complaintModel = ComplaintModel.fromJson(response);
     return complaintModel;
   }
