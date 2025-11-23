@@ -1,4 +1,5 @@
 import 'package:complaint_app/features/complaints/domain/entities/complaints_entity.dart';
+import 'package:complaint_app/features/complaints/domain/entities/complaints_pageination_entity.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../../../core/connection/network_info.dart';
@@ -44,6 +45,32 @@ class ComplaintRepositoryImpl extends ComplaintRepository {
       try {
         final remoteComplaint = await remoteDataSource.addComplaint(complaint);
         return Right(remoteComplaint);
+      } on ServerException catch (e) {
+        return Left(
+          Failure(
+            errMessage: e.errorModel.errorMessage,
+            statusCode: e.errorModel.status,
+          ),
+        );
+      }
+    } else {
+      return Left(Failure(errMessage: 'No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ComplaintsPageEntity>> getAllComplaints({
+    int page = 0,
+    int size = 10,
+    String? status,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final remoteComplaints = await remoteDataSource.getAllComplaints(
+          page: page,
+          size: size,
+        );
+        return Right(remoteComplaints);
       } on ServerException catch (e) {
         return Left(
           Failure(

@@ -1,10 +1,37 @@
 import 'package:complaint_app/config/themes/app_theme.dart';
-import 'package:complaint_app/features/home/presentation/pages/home_page.dart';
+import 'package:complaint_app/core/databases/api/injection_container.dart';
+import 'package:complaint_app/features/complaints/domain/usecases/add_complaints.dart';
+import 'package:complaint_app/features/complaints/domain/usecases/get_all_complaint.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/add/add_complaint_bloc.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/show_all/show_all_complaints_bloc.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/show_all/show_all_complaints_event.dart';
+import 'package:complaint_app/features/complaints/presentation/pages/add_complaints_page.dart';
+import 'package:complaint_app/features/complaints/presentation/pages/complaints_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await init(); // GetIt init
+
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<ComplaintsBloc>(
+          create: (_) =>
+              ComplaintsBloc(getAllComplaint: sl<GetAllComplaint>())
+                ..add(GetAllComplaintsEvent(refresh: true)),
+        ),
+        BlocProvider(
+          create: (_) =>
+              AddComplaintBloc(addComplaintUseCase: sl<AddComplaint>()),
+          child: const AddComplaintsPage(),
+        ),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

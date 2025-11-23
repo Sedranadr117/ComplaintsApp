@@ -41,6 +41,7 @@ dependencies:
   get: ^4.7.2
   google_fonts: ^6.2.1
   sizer: ^2.0.15
+  get_it: ^8.1.0
 
 dev_dependencies:
   flutter_lints: ^5.0.0

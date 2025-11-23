@@ -1,21 +1,28 @@
 import 'package:complaint_app/config/themes/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+class HomeHeader extends StatefulWidget {
+  final Function(String? status) onFilterChanged;
 
+  const HomeHeader({super.key, required this.onFilterChanged});
+
+  @override
+  State<HomeHeader> createState() => _HomeHeaderState();
+}
+
+class _HomeHeaderState extends State<HomeHeader> {
+  String selectedFilter = 'الكل';
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const filters = ['كل الشكاوى', 'قيد المعالجة', 'بانتظار الرد'];
+    const filters = ['الكل', 'قيد المعالجة', 'مرفوضة', 'منجزة', 'جديدة'];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            // Logo on the left
-
             // Icons on the right
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -46,39 +53,41 @@ class HomeHeader extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        Container(
-          decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
-          child: TextField(
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              hintText: 'ابحث عن شكوى أو رقم مرجعي',
-              hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: AppColors.textDisabledLight,
-              ),
-              fillColor: theme.scaffoldBackgroundColor,
-              prefixIcon: const Icon(Icons.search),
-            ),
-          ),
-        ),
+        // const SizedBox(height: 16),
+        // Container(
+        //   decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
+        //   child: TextField(
+        //     decoration: InputDecoration(
+        //       contentPadding: const EdgeInsets.symmetric(
+        //         horizontal: 16,
+        //         vertical: 12,
+        //       ),
+        //       hintText: 'ابحث عن شكوى أو رقم مرجعي',
+        //       hintStyle: theme.textTheme.bodyMedium?.copyWith(
+        //         color: AppColors.textDisabledLight,
+        //       ),
+        //       fillColor: theme.scaffoldBackgroundColor,
+        //       prefixIcon: const Icon(Icons.search),
+        //     ),
+        //   ),
+        // ),
         const SizedBox(height: 12),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 4,
           children: filters
               .map(
                 (filter) => FilterChip(
                   label: Text(filter),
-                  onSelected: (_) {},
-                  selected: filter == filters.first,
+                  onSelected: (_) {
+                    setState(() => selectedFilter = filter);
+                    widget.onFilterChanged(filter == 'الكل' ? null : filter);
+                  },
+                  selected: selectedFilter == filter,
                   backgroundColor: theme.scaffoldBackgroundColor,
                   selectedColor: AppColors.primaryColor,
                   checkmarkColor: AppColors.onPrimaryLight,
                   labelStyle: theme.textTheme.bodyMedium?.copyWith(
-                    color: filter == filters.first
+                    color: selectedFilter == filter
                         ? AppColors.onPrimaryLight
                         : AppColors.textSecondaryLight,
                   ),

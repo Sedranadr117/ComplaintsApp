@@ -11,6 +11,17 @@ class DioConsumer extends ApiConsumer {
 
   DioConsumer({required this.dio}) {
     dio.options.baseUrl = EndPoints.baserUrl;
+    dio.interceptors.add(
+      LogInterceptor(
+        request: true,
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: true,
+        error: true,
+        logPrint: (obj) => print("📡 $obj"),
+      ),
+    );
   }
 
   Future<Map<String, dynamic>> _getAuthorizationHeader() async {
@@ -20,7 +31,7 @@ class DioConsumer extends ApiConsumer {
     // }
     // return {};
     const fixedToken =
-        'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaGF6YXRhaGFuQGdtYWlsLmNvbSIsImlhdCI6MTc2MzU2MDgyMCwiZXhwIjoxNzYzNjQ3MjIwfQ.obyfTBx4RzYzDo6CI62x-aiBGMRuAzh40GXPyU7x2-U';
+        'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ6ZW5hYi5zZW4wM0BnbWFpbC5jb20iLCJpYXQiOjE3NjM4NzQyODAsImV4cCI6MTc2Mzk2MDY4MH0.-KeYpRk1mdhTFXJREepPbhq3clxdVLQWVzIGeHRtdS0';
     return {'Authorization': 'Bearer $fixedToken'};
   }
 
@@ -38,12 +49,17 @@ class DioConsumer extends ApiConsumer {
 
       var res = await dio.post(
         path,
-        data: isFormData ? FormData.fromMap(data) : data,
+        data: isFormData
+            ? (data is FormData ? data : FormData.fromMap(data))
+            : data,
         queryParameters: queryParameters,
-        options: Options(headers: authHeader),
+        options: Options(
+          headers: authHeader,
+          contentType: isFormData ? 'multipart/form-data' : 'application/json',
+        ),
       );
 
-      return res.data; // << هاد لازم ترجعيه
+      return res.data;
     } on DioException catch (e) {
       handleDioException(e);
     }

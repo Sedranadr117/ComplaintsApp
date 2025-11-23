@@ -1,5 +1,5 @@
 class EndPoints {
-  static const String baserUrl = "https://eb620f213089.ngrok-free.app/api/v1/";
+  static const String baserUrl = "http://89.116.236.10:3200/api/v1/";
 
   static const String template = "template/";
 
@@ -9,7 +9,7 @@ class EndPoints {
   static const String getAreas = "areas";
 
   //Complaint
-  static const String addComplaint = "complaints";
+  static const String complaints = "complaints";
 }
 
 class ApiKeys {

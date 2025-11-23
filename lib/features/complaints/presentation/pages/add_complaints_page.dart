@@ -1,11 +1,13 @@
 import 'package:complaint_app/config/extensions/navigator.dart';
 import 'package:complaint_app/core/params/params.dart';
-import 'package:complaint_app/features/complaints/presentation/bloc/add_complaint_bloc.dart';
-import 'package:complaint_app/features/complaints/presentation/bloc/dropdown_cubit.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/add/add_complaint_bloc.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/dropdown/dropdown_cubit.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/show_all/show_all_complaints_bloc.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/show_all/show_all_complaints_event.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/custome_text_filed.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/drop_menue_widget.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/file_picker_widget.dart';
-import 'package:complaint_app/features/home/presentation/pages/home_page.dart';
+import 'package:complaint_app/features/complaints/presentation/pages/complaints_page.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -83,7 +85,7 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
     "مصرف سوريا المركزي",
   ];
 
-  PlatformFile? selectedFile;
+  List<PlatformFile> attachments = [];
   String? selectedType;
   String? selectedGovernorate;
   String? selectedAgency;
@@ -109,11 +111,15 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
             discriptionComplaintController.clear();
             solutionComplaintController.clear();
             setState(() {
-              selectedFile = null;
+              attachments = [];
               selectedType = null;
               selectedGovernorate = null;
               selectedAgency = null;
             });
+            context.read<ComplaintsBloc>().add(
+              GetAllComplaintsEvent(refresh: true),
+            );
+
             context.popPage(HomePage());
           } else if (state is AddComplaintError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -163,7 +169,7 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
                         label: 'ادخل موقع الشكوى',
                         controller: locationComplaintController,
                         isIcon: true,
-                        icon: Icons.location_on,
+                        icon: Icons.location_on_outlined,
                       ),
                       SizedBox(height: 20),
                       CustomTextField(
@@ -178,11 +184,17 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
                       ),
                       SizedBox(height: 20),
                       FilePickerWidget(
-                        label: selectedFile == null
+                        label: attachments.isEmpty
                             ? "اختر ملف (صورة أو PDF)"
-                            : selectedFile!.name,
+                            : attachments.length > 1
+                            ? "${attachments.length} ملفات مختارة"
+                            : "ملف مختار: ${attachments.first.name}",
                         onFilePicked: (file) {
-                          setState(() => selectedFile = file);
+                          if (file != null) {
+                            setState(() {
+                              attachments.add(file);
+                            });
+                          }
                         },
                       ),
                       SizedBox(height: 25),
@@ -223,10 +235,7 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
                                         .trim(),
                                     solutionSuggestion:
                                         solutionComplaintController.text.trim(),
-                                    citizenId: 1,
-                                    attachments: selectedFile?.path != null
-                                        ? [selectedFile!.path!]
-                                        : [],
+                                    attachments: attachments,
                                   );
 
                                   context.read<AddComplaintBloc>().add(

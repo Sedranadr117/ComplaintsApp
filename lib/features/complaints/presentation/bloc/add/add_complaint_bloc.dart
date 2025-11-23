@@ -1,8 +1,8 @@
 import 'package:complaint_app/features/complaints/domain/usecases/add_complaints.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/complaints_entity.dart';
-import '../../../../../../core/params/params.dart';
+import '../../../domain/entities/complaints_entity.dart';
+import '../../../../../../../core/params/params.dart';
 
 part 'add_complaint_event.dart';
 part 'add_complaint_state.dart';

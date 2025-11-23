@@ -1,9 +1,10 @@
 import 'package:complaint_app/config/extensions/theme.dart';
+import 'package:complaint_app/features/complaints/domain/entities/comlaints_list_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 class RecentComplaintTile extends StatelessWidget {
-  final Complaint complaint;
+  final ComplaintListEntity complaint;
 
   const RecentComplaintTile({super.key, required this.complaint});
   @override
@@ -72,7 +73,7 @@ class RecentComplaintTile extends StatelessWidget {
                         ),
                         // Complaint Type (نوعها)
                         Text(
-                          'النوع: ${complaint.type}',
+                          'النوع: ${complaint.complaintType}',
                           style: context.text.bodyLarge!.copyWith(
                             fontWeight: FontWeight.w600,
                             fontSize: 13.sp,
@@ -89,7 +90,7 @@ class RecentComplaintTile extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        'الجهة: ${complaint.entity}',
+                        'الجهة: ${complaint.governmentAgency}',
                         style: context.text.bodyMedium!.copyWith(
                           color: context.colors.onSurfaceVariant,
                         ),
@@ -102,7 +103,7 @@ class RecentComplaintTile extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        'التاريخ: ${complaint.date.toLocal().toString().split(' ')[0]}',
+                        'التاريخ: ${complaint.createdAt}',
                         style: context.text.bodyMedium!.copyWith(
                           color: context.colors.onSurfaceVariant,
                           fontSize: 10.sp,
@@ -120,47 +121,3 @@ class RecentComplaintTile extends StatelessWidget {
     );
   }
 }
-
-class Complaint {
-  final String type;
-  final String entity;
-  final DateTime date;
-  final ComplaintStatus status;
-
-  Complaint({
-    required this.type,
-    required this.entity,
-    required this.date,
-    required this.status,
-  });
-
-  String get statusText {
-    switch (status) {
-      case ComplaintStatus.newComplaint:
-        return 'جديدة';
-      case ComplaintStatus.inReview:
-        return 'قيد المراجعة';
-      case ComplaintStatus.completed:
-        return 'مكتملة';
-      case ComplaintStatus.rejected:
-        return 'مرفوضة';
-    }
-  }
-
-  // تم تعديل الدالة لتستقبل BuildContext كـ parameter
-  Color statusColor(BuildContext context) {
-    // Accessing colors via context.colors using the passed context
-    switch (status) {
-      case ComplaintStatus.newComplaint:
-        return const Color(0xFF3B7C88);
-      case ComplaintStatus.inReview:
-        return const Color(0xFFE6A43B);
-      case ComplaintStatus.completed:
-        return const Color(0xFF1FAC82);
-      case ComplaintStatus.rejected:
-        return const Color(0xFFD75454);
-    }
-  }
-}
-
-enum ComplaintStatus { newComplaint, inReview, completed, rejected }
