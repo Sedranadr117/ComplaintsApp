@@ -10,6 +10,11 @@ import 'package:complaint_app/features/auth/domain/usecases/otp_usecase.dart';
 import 'package:complaint_app/features/auth/domain/usecases/register_usecase.dart';
 import 'package:complaint_app/features/auth/domain/usecases/resend_otp_usecase.dart';
 import 'package:complaint_app/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:complaint_app/features/complaints/data/datasources/complaints_remote_data_source.dart';
+import 'package:complaint_app/features/complaints/data/repositories/complaints_repository_impl.dart';
+import 'package:complaint_app/features/complaints/domain/repositories/complaints_repository.dart';
+import 'package:complaint_app/features/complaints/domain/usecases/add_complaints.dart';
+import 'package:complaint_app/features/complaints/domain/usecases/get_all_complaint.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
@@ -63,5 +68,17 @@ sl.registerFactory(() => AuthBloc(
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSource(api: sl()),
   );
+
+    // Data sources
+  sl.registerLazySingleton(() => ComplaintsRemoteDataSource(api: sl()));
+
+  // Repository
+  sl.registerLazySingleton<ComplaintRepository>(
+    () => ComplaintRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetAllComplaint(repository: sl()));
+  sl.registerLazySingleton(() => AddComplaint(repository: sl()));
 
 }

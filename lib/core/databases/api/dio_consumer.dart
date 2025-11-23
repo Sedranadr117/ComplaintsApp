@@ -10,12 +10,23 @@ class DioConsumer extends ApiConsumer {
   final SecureStorageHelper secureStorageHelper;
   final String _tokenKey = 'AUTH_TOKEN';
 
-  DioConsumer({required this.dio,required this.secureStorageHelper }) {
+  DioConsumer({required this.dio, required this.secureStorageHelper}) {
     dio.options.baseUrl = EndPoints.baserUrl;
+    dio.interceptors.add(
+      LogInterceptor(
+        request: true,
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: true,
+        error: true,
+        logPrint: (obj) => print("📡 $obj"),
+      ),
+    );
   }
 
   Future<Map<String, dynamic>> _getAuthorizationHeader() async {
-   final token = await secureStorageHelper.getString(_tokenKey);
+    final token = await secureStorageHelper.getString(_tokenKey);
     if (token != null && token.isNotEmpty) {
       return {'Authorization': 'Bearer $token'};
     }
@@ -33,13 +44,15 @@ class DioConsumer extends ApiConsumer {
     try {
       final authHeader = await _getAuthorizationHeader();
       // 2. إنشاء خريطة ترويسات جديدة وإضافة Content-Type
-    final Map<String, dynamic> headers = Map.from(authHeader);
+      final Map<String, dynamic> headers = Map.from(authHeader);
 
-    if (!isFormData) {
-      // 🚀 التصحيح: إذا لم يكن الطلب Form Data، نعتبره JSON ونحدد Content-Type: application/json
-      // هذا يحل مشكلة رسالة التحذير السابقة
-      headers['Content-Type'] = 'application/json';
-    }
+      if (!isFormData) {
+        // 🚀 التصحيح: إذا لم يكن الطلب Form Data، نعتبره JSON ونحدد Content-Type: application/json
+        // هذا يحل مشكلة رسالة التحذير السابقة
+        headers['Content-Type'] = 'application/json';
+      } else {
+        headers['Content-Type'] = "multipart/form-data";
+      }
 
       var res = await dio.post(
         path,

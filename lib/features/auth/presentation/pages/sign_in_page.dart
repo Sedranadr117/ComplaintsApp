@@ -3,11 +3,10 @@ import 'package:complaint_app/config/extensions/theme.dart';
 import 'package:complaint_app/config/helper/validation.dart';
 import 'package:complaint_app/config/themes/app_assets.dart';
 import 'package:complaint_app/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:complaint_app/features/auth/presentation/pages/home.dart';
-import 'package:complaint_app/features/auth/presentation/pages/otp_page.dart';
 import 'package:complaint_app/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:complaint_app/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:complaint_app/features/auth/presentation/widgets/main_button.dart';
+import 'package:complaint_app/features/complaints/presentation/pages/complaints_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
@@ -48,7 +47,7 @@ class _SignInScreenState extends State<SignInScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is LoginSuccessState) {
-          context.pushReplacementPage(Home());
+          context.pushReplacementPage(HomePage());
 
         } else if (state is AuthErrorState) {
 

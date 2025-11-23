@@ -22,6 +22,7 @@ dependencies:
   flutter_native_splash: ^2.4.7
   get_it: ^9.1.0
   equatable: ^2.0.7
+  file_picker: ^8.0.0
 
 dev_dependencies:
   flutter_test:

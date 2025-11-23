@@ -7,6 +7,7 @@ class EndPoints {
   static const String register = "citizens/register";
   static const String verifyOtp = "citizens/verify-otp";
   static const String reSendOtp = "citizens/resend-otp";
+  static const String complaints = "complaints";
 
 }
 

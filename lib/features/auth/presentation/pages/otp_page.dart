@@ -3,6 +3,7 @@ import 'package:complaint_app/config/extensions/theme.dart';
 import 'package:complaint_app/config/helper/validation.dart' show FormValidators;
 import 'package:complaint_app/config/themes/app_colors.dart';
 import 'package:complaint_app/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:complaint_app/features/auth/presentation/pages/sign_in_page.dart';
 import 'package:complaint_app/features/auth/presentation/widgets/main_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -72,11 +73,10 @@ class _OtpScreenState extends State<OtpScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is OtpVerificationSuccessState) {
-          // عند نجاح التحقق: التوجيه إلى الصفحة الرئيسية (أو تسجيل الدخول)
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('تم التحقق بنجاح!')),
+            const SnackBar(content: Text('تم التحقق بنجاح الرجاء القيام بتسجيل الدخول!')),
           );
-          context.popUntilFirst(); // افترض أن هذه الدالة تعود إلى أول شاشة
+          context.pushReplacementPage(SignInScreen()); // افترض أن هذه الدالة تعود إلى أول شاشة
         } else if (state is OtpResendSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
