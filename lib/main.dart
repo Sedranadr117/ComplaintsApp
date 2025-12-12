@@ -15,6 +15,7 @@ import 'package:sizer/sizer.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+
   // تهيئة الـ Service Locator
   await init();
   runApp(const MyApp());
