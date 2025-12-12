@@ -4,12 +4,22 @@ import 'package:file_picker/file_picker.dart';
 class FilePickerWidget extends StatelessWidget {
   final String label;
   final void Function(PlatformFile?) onFilePicked;
+  final int maxFileSizeInMB;
+  final int? maxTotalSizeInMB;
 
   const FilePickerWidget({
     super.key,
     required this.label,
     required this.onFilePicked,
+    this.maxFileSizeInMB = 10, // Default 10MB per file
+    this.maxTotalSizeInMB, // Optional total size limit
   });
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +31,34 @@ class FilePickerWidget extends StatelessWidget {
           allowedExtensions: ['jpg', 'png', 'jpeg', 'pdf'],
         );
 
-        if (result != null) {
+        if (result != null && result.files.isNotEmpty) {
+          final maxSizeBytes = maxFileSizeInMB * 1024 * 1024;
+          final oversizedFiles = <PlatformFile>[];
+
+          // Check each file size
+          for (var file in result.files) {
+            if (file.size > maxSizeBytes) {
+              oversizedFiles.add(file);
+            }
+          }
+
+          if (oversizedFiles.isNotEmpty) {
+            final fileList = oversizedFiles
+                .map((f) => '${f.name} (${_formatFileSize(f.size)})')
+                .join('\n');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'الملفات التالية كبيرة جداً (الحد الأقصى: ${maxFileSizeInMB}MB):\n$fileList',
+                ),
+                duration: Duration(seconds: 5),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+
+          // If all files are valid, add the first one (or handle multiple)
           onFilePicked(result.files.first);
         } else {
           onFilePicked(null);

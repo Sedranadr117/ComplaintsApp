@@ -13,68 +13,86 @@ class ComplaintsBloc extends Bloc<ComplaintsEvent, ComplaintsState> {
   int currentPage = 0;
   ComplaintsBloc({required this.getAllComplaint}) : super(ComplaintInitial()) {
     on<GetAllComplaintsEvent>((event, emit) async {
-      if (isLoading) return;
-      isLoading = true;
-
-      final Map<String, String> statusMap = {
-        'جديدة': 'PENDING',
-        'قيد المعالجة': 'IN_PROGRESS',
-        'منجزة': 'CLOSED',
-        'مرفوضة': 'REJECTED',
-      };
-
-      final String? incomingFilter = event.status;
-      final bool filterChanged =
-          incomingFilter != null && incomingFilter != currentFilter;
-
-      if (event.refresh || filterChanged) {
-        currentPage = 0;
-        currentFilter = incomingFilter;
-        complaints.clear();
-
-        isLoading = false;
-        emit(ComplaintLoading());
+      try {
+        if (isLoading) return;
         isLoading = true;
-      } else {
-        emit(ComplaintLoading());
+
+        final Map<String, String> statusMap = {
+          'جديدة': 'PENDING',
+          'قيد المعالجة': 'IN_PROGRESS',
+          'منجزة': 'CLOSED',
+          'مرفوضة': 'REJECTED',
+        };
+
+        final String? incomingFilter = event.status;
+        final bool filterChanged =
+            incomingFilter != null && incomingFilter != currentFilter;
+
+        if (event.refresh || filterChanged) {
+          currentPage = 0;
+          currentFilter = incomingFilter;
+          complaints.clear();
+
+          isLoading = false;
+          emit(ComplaintLoading());
+          isLoading = true;
+        } else {
+          emit(ComplaintLoading());
+        }
+
+        final mappedStatus = currentFilter != null
+            ? statusMap[currentFilter!]
+            : null;
+
+        final result = await getAllComplaint(
+          page: currentPage,
+          size: event.size,
+          status: mappedStatus,
+        );
+
+        result.fold(
+          (failure) {
+            isLoading = false;
+            emit(ComplaintError(message: failure.errMessage));
+          },
+          (data) {
+            try {
+              complaints.addAll(data.content);
+
+              List<ComplaintListEntity> filteredComplaints = complaints;
+              if (mappedStatus != null) {
+                filteredComplaints = complaints
+                    .where((c) => c.status == mappedStatus)
+                    .toList();
+              }
+
+              if (data.hasNext) currentPage++;
+
+              isLoading = false;
+              emit(
+                ComplaintSuccess(
+                  complaint: data,
+                  allComplaints: filteredComplaints,
+                ),
+              );
+            } catch (e) {
+              isLoading = false;
+              emit(
+                ComplaintError(
+                  message: 'Failed to process complaints: ${e.toString()}',
+                ),
+              );
+            }
+          },
+        );
+      } catch (e) {
+        isLoading = false;
+        emit(
+          ComplaintError(
+            message: 'Unexpected error occurred: ${e.toString()}',
+          ),
+        );
       }
-
-      final mappedStatus = currentFilter != null
-          ? statusMap[currentFilter!]
-          : null;
-
-      final result = await getAllComplaint(
-        page: currentPage,
-        size: event.size,
-        status: mappedStatus,
-      );
-
-      result.fold(
-        (failure) {
-          isLoading = false;
-          emit(ComplaintError(message: failure.errMessage));
-        },
-        (data) {
-          complaints.addAll(data.content);
-
-          List<ComplaintListEntity> filteredComplaints = complaints;
-          if (mappedStatus != null) {
-            filteredComplaints = complaints
-                .where((c) => c.status == mappedStatus)
-                .toList();
-          }
-
-          if (data.hasNext) currentPage++;
-
-          isLoading = false;
-          emit(
-            ComplaintSuccess(
-              complaint: data,
-              allComplaints: filteredComplaints,
-            ),
-          );
-        },
-      );
     });
   }
 }

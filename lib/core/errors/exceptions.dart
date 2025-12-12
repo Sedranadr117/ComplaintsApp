@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:complaint_app/core/errors/error_model.dart';
 import 'package:dio/dio.dart';
 
@@ -65,31 +63,76 @@ class UnknownException extends ServerException {
 class ConflictException extends ServerException {
   ConflictException(super.errorModel);
 }
+
 class BadRequestException extends ServerException {
   BadRequestException(super.errorModel);
 }
 
-
-
 handleDioException(DioException e) {
   switch (e.type) {
     case DioExceptionType.connectionError:
-      throw ConnectionErrorException(ErrorModel.fromJson(e.response!.data));
+      if (e.response != null && e.response!.data != null) {
+        throw ConnectionErrorException(ErrorModel.fromJson(e.response!.data));
+      }
+      throw ConnectionErrorException(
+        ErrorModel(
+          status: 0,
+          errorMessage: 'Connection error: ${e.message ?? "Unknown error"}',
+        ),
+      );
     case DioExceptionType.badCertificate:
-      throw BadCertificateException(ErrorModel.fromJson(e.response!.data));
+      if (e.response != null && e.response!.data != null) {
+        throw BadCertificateException(ErrorModel.fromJson(e.response!.data));
+      }
+      throw BadCertificateException(
+        ErrorModel(
+          status: 0,
+          errorMessage: 'Bad certificate: ${e.message ?? "Unknown error"}',
+        ),
+      );
     case DioExceptionType.connectionTimeout:
-      throw ConnectionTimeoutException(ErrorModel.fromJson(e.response!.data));
+      if (e.response != null && e.response!.data != null) {
+        throw ConnectionTimeoutException(ErrorModel.fromJson(e.response!.data));
+      }
+      throw ConnectionTimeoutException(
+        ErrorModel(
+          status: 408,
+          errorMessage:
+              'Connection timeout: ${e.message ?? "Request timed out"}',
+        ),
+      );
 
     case DioExceptionType.receiveTimeout:
-      throw ReceiveTimeoutException(ErrorModel.fromJson(e.response!.data));
+      if (e.response != null && e.response!.data != null) {
+        throw ReceiveTimeoutException(ErrorModel.fromJson(e.response!.data));
+      }
+      throw ReceiveTimeoutException(
+        ErrorModel(
+          status: 408,
+          errorMessage: 'Receive timeout: ${e.message ?? "Response timed out"}',
+        ),
+      );
 
     case DioExceptionType.sendTimeout:
-      throw SendTimeoutException(ErrorModel.fromJson(e.response!.data));
+      if (e.response != null && e.response!.data != null) {
+        throw SendTimeoutException(ErrorModel.fromJson(e.response!.data));
+      }
+      throw SendTimeoutException(
+        ErrorModel(
+          status: 408,
+          errorMessage:
+              'Send timeout: ${e.message ?? "Request send timed out"}',
+        ),
+      );
 
     case DioExceptionType.badResponse:
+      if (e.response == null) {
+        throw BadResponseException(
+          ErrorModel(status: 500, errorMessage: 'No response from server'),
+        );
+      }
       switch (e.response?.statusCode) {
         case 400: // Bad request
-
           throw BadResponseException(ErrorModel.fromJson(e.response!.data));
 
         case 401: //unauthorized
@@ -102,14 +145,14 @@ handleDioException(DioException e) {
           throw NotFoundException(ErrorModel.fromJson(e.response!.data));
 
         case 409: //cofficient
-
           throw CofficientException(ErrorModel.fromJson(e.response!.data));
 
-        case 504: // Bad request
-
-          throw BadResponseException(
-            ErrorModel(status: 504, errorMessage: e.response!.data),
-          );
+        case 500: // Internal server error
+        case 502: // Bad gateway
+        case 503: // Service unavailable
+        case 504: // Gateway timeout
+        default: // Any other error status code
+          throw BadResponseException(ErrorModel.fromJson(e.response!.data));
       }
 
     case DioExceptionType.cancel:

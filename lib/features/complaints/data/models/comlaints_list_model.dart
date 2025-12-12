@@ -22,30 +22,73 @@ class ComplaintListModel extends ComplaintListEntity {
   });
 
   factory ComplaintListModel.fromJson(Map<String, dynamic> json) {
-    return ComplaintListModel(
-      id: json['id'],
-      complaintType: json['complaintType'],
-      governorate: json['governorate'],
-      governmentAgency: json['governmentAgency'],
-      location: json['location'],
-      description: json['description'],
-      solutionSuggestion: json['solutionSuggestion'],
-      status: json['status'],
-      response: json['response'],
-      respondedAt: json['respondedAt'],
-      respondedById: json['respondedById'],
-      respondedByName: json['respondedByName'],
-      attachments:
-          (json['attachments'] as List?)
-              ?.map<String>(
-                (e) => (e as Map<String, dynamic>)['downloadUrl'] as String,
-              )
-              .toList() ??
-          [],
-      citizenId: json['citizenId'],
-      citizenName: json['citizenName'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
-    );
+    try {
+      // Safely parse attachments
+      List<String> parseAttachments(dynamic attachmentsData) {
+        if (attachmentsData == null) return [];
+        if (attachmentsData is! List) return [];
+        
+        final List<String> result = [];
+        for (var item in attachmentsData) {
+          try {
+            if (item is String) {
+              result.add(item);
+            } else if (item is Map) {
+              final mapItem = Map<String, dynamic>.from(item);
+              final url = mapItem['downloadUrl'] as String? ?? 
+                         mapItem['url'] as String?;
+              if (url != null && url.isNotEmpty) {
+                result.add(url);
+              }
+            }
+          } catch (e) {
+            // Skip invalid attachment items
+            continue;
+          }
+        }
+        return result;
+      }
+
+      return ComplaintListModel(
+        id: (json['id'] as num?)?.toInt() ?? 0,
+        complaintType: json['complaintType'] as String? ?? '',
+        governorate: json['governorate'] as String? ?? '',
+        governmentAgency: json['governmentAgency'] as String? ?? '',
+        location: json['location'] as String? ?? '',
+        description: json['description'] as String? ?? '',
+        solutionSuggestion: json['solutionSuggestion'] as String? ?? '',
+        status: json['status'] as String? ?? 'PENDING',
+        response: json['response'] as String?,
+        respondedAt: json['respondedAt'] as String?,
+        respondedById: (json['respondedById'] as num?)?.toInt(),
+        respondedByName: json['respondedByName'] as String?,
+        attachments: parseAttachments(json['attachments']),
+        citizenId: (json['citizenId'] as num?)?.toInt() ?? 0,
+        citizenName: json['citizenName'] as String? ?? '',
+        createdAt: json['createdAt'] as String?,
+        updatedAt: json['updatedAt'] as String?,
+      );
+    } catch (e) {
+      // Return a default model with safe values if parsing fails
+      return ComplaintListModel(
+        id: 0,
+        complaintType: '',
+        governorate: '',
+        governmentAgency: '',
+        location: '',
+        description: '',
+        solutionSuggestion: '',
+        status: 'PENDING',
+        response: null,
+        respondedAt: null,
+        respondedById: null,
+        respondedByName: null,
+        attachments: [],
+        citizenId: 0,
+        citizenName: '',
+        createdAt: null,
+        updatedAt: null,
+      );
+    }
   }
 }

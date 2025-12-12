@@ -1,4 +1,3 @@
-import 'package:complaint_app/config/helper/injection_container.dart';
 import 'package:complaint_app/core/databases/api/api_consumer.dart';
 import 'package:complaint_app/core/databases/api/end_points.dart';
 import 'package:complaint_app/core/databases/cache/cache_helper.dart';
@@ -44,14 +43,24 @@ class DioConsumer extends ApiConsumer {
     try {
       final authHeader = await _getAuthorizationHeader();
 
-      // Let Dio automatically set multipart/form-data content type with boundary when FormData is used
+      // When FormData is used, let Dio automatically set multipart/form-data content type
+      final formData = isFormData
+          ? (data is FormData ? data : FormData.fromMap(data))
+          : null;
+
+      // For FormData, create Options without contentType to let Dio set it automatically
+      // For regular JSON, set contentType to application/json
+      final options = formData != null
+          ? Options(headers: authHeader)
+          : Options(
+              headers: {...authHeader, 'Content-Type': 'application/json'},
+            );
+
       var res = await dio.post(
         path,
-        data: isFormData
-            ? (data is FormData ? data : FormData.fromMap(data))
-            : data,
+        data: formData ?? data,
         queryParameters: queryParameters,
-        options: Options(headers: authHeader),
+        options: options,
       );
 
       return res.data;

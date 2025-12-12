@@ -13,20 +13,53 @@ class ComplaintsPageModel extends ComplaintsPageEntity {
   });
 
   factory ComplaintsPageModel.fromJson(Map<String, dynamic> json) {
-    final complaints =
-        (json['content'] as List?)
-            ?.map((e) => ComplaintListModel.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        [];
+    try {
+      final List<ComplaintListModel> complaints = [];
+      
+      if (json['content'] != null && json['content'] is List) {
+        try {
+          complaints.addAll(
+            (json['content'] as List).map((e) {
+              try {
+                if (e is Map<String, dynamic>) {
+                  return ComplaintListModel.fromJson(e);
+                } else {
+                  return ComplaintListModel.fromJson(
+                    Map<String, dynamic>.from(e),
+                  );
+                }
+              } catch (e) {
+                // Skip invalid complaint items
+                return null;
+              }
+            }).whereType<ComplaintListModel>(),
+          );
+        } catch (e) {
+          // If parsing fails, use empty list
+          complaints.clear();
+        }
+      }
 
-    return ComplaintsPageModel(
-      content: complaints,
-      page: json['page'] ?? 0,
-      size: json['size'] ?? 10,
-      totalElements: json['totalElements'] ?? 0,
-      totalPages: json['totalPages'] ?? 0,
-      hasNext: json['hasNext'] ?? false,
-      hasPrevious: json['hasPrevious'] ?? false,
-    );
+      return ComplaintsPageModel(
+        content: complaints,
+        page: (json['page'] as num?)?.toInt() ?? 0,
+        size: (json['size'] as num?)?.toInt() ?? 10,
+        totalElements: (json['totalElements'] as num?)?.toInt() ?? 0,
+        totalPages: (json['totalPages'] as num?)?.toInt() ?? 0,
+        hasNext: json['hasNext'] as bool? ?? false,
+        hasPrevious: json['hasPrevious'] as bool? ?? false,
+      );
+    } catch (e) {
+      // Return empty page model if parsing fails completely
+      return ComplaintsPageModel(
+        content: [],
+        page: 0,
+        size: 10,
+        totalElements: 0,
+        totalPages: 0,
+        hasNext: false,
+        hasPrevious: false,
+      );
+    }
   }
 }

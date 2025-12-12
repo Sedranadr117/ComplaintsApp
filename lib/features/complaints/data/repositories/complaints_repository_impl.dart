@@ -31,6 +31,13 @@ class ComplaintRepositoryImpl extends ComplaintRepository {
             statusCode: e.errorModel.status,
           ),
         );
+      } catch (e) {
+        return Left(
+          Failure(
+            errMessage: 'Unexpected error: ${e.toString()}',
+            statusCode: 500,
+          ),
+        );
       }
     } else {
       return Left(Failure(errMessage: 'No internet connection'));
@@ -50,6 +57,13 @@ class ComplaintRepositoryImpl extends ComplaintRepository {
           Failure(
             errMessage: e.errorModel.errorMessage,
             statusCode: e.errorModel.status,
+          ),
+        );
+      } catch (e) {
+        return Left(
+          Failure(
+            errMessage: 'Unexpected error: ${e.toString()}',
+            statusCode: 500,
           ),
         );
       }
@@ -76,6 +90,13 @@ class ComplaintRepositoryImpl extends ComplaintRepository {
           Failure(
             errMessage: e.errorModel.errorMessage,
             statusCode: e.errorModel.status,
+          ),
+        );
+      } catch (e) {
+        return Left(
+          Failure(
+            errMessage: 'Unexpected error: ${e.toString()}',
+            statusCode: 500,
           ),
         );
       }

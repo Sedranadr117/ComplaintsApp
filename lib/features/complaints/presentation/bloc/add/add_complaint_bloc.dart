@@ -11,15 +11,26 @@ class AddComplaintBloc extends Bloc<AddComplaintEvent, AddComplaintState> {
   final AddComplaint addComplaintUseCase;
 
   AddComplaintBloc({required this.addComplaintUseCase})
-    : super(AddComplaintInitial()) {
+      : super(AddComplaintInitial()) {
     on<SendComplaintEvent>((event, emit) async {
-      emit(AddComplaintLoading());
+      try {
+        emit(AddComplaintLoading());
 
-      final result = await addComplaintUseCase(params: event.params);
+        final result = await addComplaintUseCase(params: event.params);
 
-      result.fold((failure) {
-        emit(AddComplaintError(message: failure.errMessage));
-      }, (data) => emit(AddComplaintSuccess(complaint: data)));
+        result.fold(
+          (failure) {
+            emit(AddComplaintError(message: failure.errMessage));
+          },
+          (data) => emit(AddComplaintSuccess(complaint: data)),
+        );
+      } catch (e) {
+        emit(
+          AddComplaintError(
+            message: 'Unexpected error occurred: ${e.toString()}',
+          ),
+        );
+      }
     });
   }
 }

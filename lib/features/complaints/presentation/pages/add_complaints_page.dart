@@ -185,18 +185,103 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
                       SizedBox(height: 20),
                       FilePickerWidget(
                         label: attachments.isEmpty
-                            ? "اختر ملف (صورة أو PDF)"
+                            ? "اختر ملف (صورة أو PDF) - الحد الأقصى 10MB"
                             : attachments.length > 1
                             ? "${attachments.length} ملفات مختارة"
                             : "ملف مختار: ${attachments.first.name}",
+                        maxFileSizeInMB: 10,
                         onFilePicked: (file) {
                           if (file != null) {
+                            // Check total size of all attachments
+                            final currentTotalSize = attachments.fold<int>(
+                              0,
+                              (sum, file) => sum + (file.size),
+                            );
+                            final newTotalSize = currentTotalSize + file.size;
+                            final maxTotalSize = 50 * 1024 * 1024; // 50MB total
+
+                            if (newTotalSize > maxTotalSize) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'إجمالي حجم الملفات كبير جداً (الحد الأقصى: 50MB)',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
                             setState(() {
                               attachments.add(file);
                             });
                           }
                         },
                       ),
+                      if (attachments.isNotEmpty) ...[
+                        SizedBox(height: 12),
+                        ...attachments.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final file = entry.value;
+                          final fileSizeMB = (file.size / (1024 * 1024))
+                              .toStringAsFixed(2);
+                          return Container(
+                            margin: EdgeInsets.only(bottom: 8),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.insert_drive_file,
+                                  size: 20,
+                                  color: Colors.grey.shade700,
+                                ),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        file.name,
+                                        style: TextStyle(fontSize: 13),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        '$fileSizeMB MB',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.close,
+                                    size: 20,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      attachments.removeAt(index);
+                                    });
+                                  },
+                                  padding: EdgeInsets.zero,
+                                  constraints: BoxConstraints(),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ],
                       SizedBox(height: 25),
                       SizedBox(
                         width: double.infinity,

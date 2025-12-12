@@ -14,15 +14,67 @@ class ComplaintModel extends ComplaintEntity {
 
   /// fromJson
   factory ComplaintModel.fromJson(Map<String, dynamic> json) {
+    // Handle different attachment formats from the API
+    List<String> parseAttachments(dynamic attachmentsData) {
+      if (attachmentsData == null) return [];
+
+      try {
+        // If it's already a List<String>
+        if (attachmentsData is List<String>) {
+          return attachmentsData;
+        }
+
+        // If it's a List (could be List<dynamic>, List<Map>, etc.)
+        if (attachmentsData is List) {
+          final List<String> result = [];
+          for (var item in attachmentsData) {
+            if (item is String) {
+              result.add(item);
+            } else if (item is Map) {
+              // Extract downloadUrl from map structure
+              final Map<String, dynamic> mapItem = Map<String, dynamic>.from(
+                item,
+              );
+              final url =
+                  mapItem['downloadUrl'] as String? ??
+                  mapItem['url'] as String?;
+              if (url != null && url.isNotEmpty) {
+                result.add(url);
+              }
+            }
+          }
+          return result;
+        }
+
+        // If it's a Map (single attachment or different structure)
+        if (attachmentsData is Map) {
+          final Map<String, dynamic> mapData = Map<String, dynamic>.from(
+            attachmentsData,
+          );
+          // Try to extract URL
+          final url =
+              mapData['downloadUrl'] as String? ?? mapData['url'] as String?;
+          if (url != null && url.isNotEmpty) {
+            return [url];
+          }
+        }
+      } catch (e) {
+        // If parsing fails, return empty list
+        return [];
+      }
+
+      return [];
+    }
+
     return ComplaintModel(
-      complaintType: json['complaintType'],
-      governorate: json['governorate'],
-      governmentAgency: json['governmentAgency'],
-      location: json['location'],
-      description: json['description'],
-      solutionSuggestion: json['solutionSuggestion'],
-      citizenId: json['citizenId'],
-      attachments: List<String>.from(json['attachments'] ?? []),
+      complaintType: json['complaintType'] as String? ?? '',
+      governorate: json['governorate'] as String? ?? '',
+      governmentAgency: json['governmentAgency'] as String? ?? '',
+      location: json['location'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      solutionSuggestion: json['solutionSuggestion'] as String? ?? '',
+      citizenId: json['citizenId'] as int? ?? 0,
+      attachments: parseAttachments(json['attachments']),
     );
   }
 
