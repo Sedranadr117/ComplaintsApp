@@ -41,6 +41,8 @@ The application provides a seamless and transparent digital channel for citizens
 * `connectivity_plus` - Network connectivity checking
 * `google_fonts` - Typography
 * `sizer` - Responsive design
+* `flutter_native_splash` - Native splash screen configuration
+* `flutter_launcher_icons` - App icon generation
 
 ---
 
@@ -71,7 +73,16 @@ The application provides a seamless and transparent digital channel for citizens
    - Configure Firebase for iOS in `ios/Runner/`
    - Update `firebase_options.dart` with your Firebase configuration
 
-4. **Run the app**
+4. **Configure Splash Screen** (Optional)
+   - The app uses `flutter_native_splash` for native splash screens
+   - Splash screen configuration is in `pubspec.yaml` under `flutter_native_splash`
+   - To regenerate splash screen assets, run:
+     ```bash
+     dart run flutter_native_splash:create
+     ```
+   - Recommended splash image size: 400x400 to 600x600 pixels for optimal display
+
+5. **Run the app**
    ```bash
    flutter run
    ```
@@ -126,6 +137,8 @@ This application focuses on empowering citizens to initiate and follow up on the
 * Updated API endpoints and data models
 * Enhanced UI components (file picker, dropdown menu, custom text fields)
 * Better error handling and state management
+* Fixed splash screen logo sizing and configuration
+* Optimized splash screen assets for better display on all screen sizes
 
 ---
 
