@@ -1,4 +1,4 @@
-import 'package:complaint_app/features/complaints/data/repositories/complaints_repository_impl.dart';
+import 'package:complaint_app/features/complaints/domain/repositories/complaints_repository.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../../../core/errors/failure.dart';
@@ -6,7 +6,7 @@ import '../../../../../../core/params/params.dart';
 import '../entities/complaints_entity.dart';
 
 class AddComplaint {
-  final ComplaintRepositoryImpl repository;
+  final ComplaintRepository repository;
 
   AddComplaint({required this.repository});
 

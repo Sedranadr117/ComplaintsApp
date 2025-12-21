@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "596667116068",
+    "project_id": "mithaq-956c5",
+    "storage_bucket": "mithaq-956c5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596667116068:android:b9813edb0237dfb51dc6b1",
+        "android_client_info": {
+          "package_name": "com.example.complaint_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyaR8eY9HxgbdHeQV3HggleJx0DW6fe2E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

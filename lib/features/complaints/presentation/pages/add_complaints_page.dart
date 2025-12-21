@@ -1,12 +1,17 @@
 import 'package:complaint_app/config/extensions/navigator.dart';
 import 'package:complaint_app/core/params/params.dart';
-import 'package:complaint_app/features/complaints/presentation/bloc/add_complaint_bloc.dart';
-import 'package:complaint_app/features/complaints/presentation/bloc/dropdown_cubit.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/add/add_complaint_bloc.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/dropdown/dropdown_cubit.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/show_all/show_all_complaints_bloc.dart';
+import 'package:complaint_app/features/complaints/presentation/bloc/show_all/show_all_complaints_event.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/custome_text_filed.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/drop_menue_widget.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/file_picker_widget.dart';
-import 'package:complaint_app/features/home/presentation/pages/home_page.dart';
+import 'package:complaint_app/features/complaints/presentation/pages/complaints_page.dart';
+import 'package:complaint_app/features/notification/presentation/bloc/notification_bloc.dart';
+import 'package:complaint_app/features/notification/presentation/bloc/notification_event.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -83,7 +88,7 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
     "مصرف سوريا المركزي",
   ];
 
-  PlatformFile? selectedFile;
+  List<PlatformFile> attachments = [];
   String? selectedType;
   String? selectedGovernorate;
   String? selectedAgency;
@@ -98,6 +103,15 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
         ),
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).scaffoldBackgroundColor,
+          ),
+          onPressed: () {
+            context.popPage(HomePage());
+          },
+        ),
       ),
       body: BlocConsumer<AddComplaintBloc, AddComplaintState>(
         listener: (context, state) {
@@ -109,11 +123,26 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
             discriptionComplaintController.clear();
             solutionComplaintController.clear();
             setState(() {
-              selectedFile = null;
+              attachments = [];
               selectedType = null;
               selectedGovernorate = null;
               selectedAgency = null;
             });
+            context.read<ComplaintsBloc>().add(
+              GetAllComplaintsEvent(refresh: true),
+            );
+
+            // Refresh notifications after a delay to allow server to create notification
+            // The server might need a few seconds to process and create the notification
+            Future.delayed(const Duration(seconds: 3), () {
+              if (context.mounted) {
+                context.read<NotificationBloc>().add(FetchNotificationsEvent());
+                debugPrint(
+                  '🔄 Refreshing notifications after complaint creation',
+                );
+              }
+            });
+
             context.popPage(HomePage());
           } else if (state is AddComplaintError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -163,7 +192,7 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
                         label: 'ادخل موقع الشكوى',
                         controller: locationComplaintController,
                         isIcon: true,
-                        icon: Icons.location_on,
+                        icon: Icons.location_on_outlined,
                       ),
                       SizedBox(height: 20),
                       CustomTextField(
@@ -178,13 +207,104 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
                       ),
                       SizedBox(height: 20),
                       FilePickerWidget(
-                        label: selectedFile == null
-                            ? "اختر ملف (صورة أو PDF)"
-                            : selectedFile!.name,
+                        label: attachments.isEmpty
+                            ? "اختر ملف (صورة أو PDF) - الحد الأقصى 10MB"
+                            : attachments.length > 1
+                            ? "${attachments.length} ملفات مختارة"
+                            : "ملف مختار: ${attachments.first.name}",
+                        maxFileSizeInMB: 10,
                         onFilePicked: (file) {
-                          setState(() => selectedFile = file);
+                          if (file != null) {
+                            // Check total size of all attachments
+                            final currentTotalSize = attachments.fold<int>(
+                              0,
+                              (sum, file) => sum + (file.size),
+                            );
+                            final newTotalSize = currentTotalSize + file.size;
+                            final maxTotalSize = 50 * 1024 * 1024; // 50MB total
+
+                            if (newTotalSize > maxTotalSize) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'إجمالي حجم الملفات كبير جداً (الحد الأقصى: 50MB)',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            setState(() {
+                              attachments.add(file);
+                            });
+                          }
                         },
                       ),
+                      if (attachments.isNotEmpty) ...[
+                        SizedBox(height: 12),
+                        ...attachments.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final file = entry.value;
+                          final fileSizeMB = (file.size / (1024 * 1024))
+                              .toStringAsFixed(2);
+                          return Container(
+                            margin: EdgeInsets.only(bottom: 8),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.insert_drive_file,
+                                  size: 20,
+                                  color: Colors.grey.shade700,
+                                ),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        file.name,
+                                        style: TextStyle(fontSize: 13),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        '$fileSizeMB MB',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.close,
+                                    size: 20,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      attachments.removeAt(index);
+                                    });
+                                  },
+                                  padding: EdgeInsets.zero,
+                                  constraints: BoxConstraints(),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ],
                       SizedBox(height: 25),
                       SizedBox(
                         width: double.infinity,
@@ -223,14 +343,15 @@ class _AddComplaintsPageState extends State<AddComplaintsPage> {
                                         .trim(),
                                     solutionSuggestion:
                                         solutionComplaintController.text.trim(),
-                                    citizenId: 1,
-                                    attachments: selectedFile?.path != null
-                                        ? [selectedFile!.path!]
-                                        : [],
+                                    attachments: attachments,
                                   );
 
                                   context.read<AddComplaintBloc>().add(
                                     SendComplaintEvent(params),
+                                  );
+
+                                  debugPrint(
+                                    '🔄 Refreshing notifications after complaint creation',
                                   );
                                 },
                           child: Text("إرسال الشكوى"),

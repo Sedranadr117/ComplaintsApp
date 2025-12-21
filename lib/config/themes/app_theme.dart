@@ -80,7 +80,7 @@ class AppTheme {
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceLight,
+        fillColor: AppColors.backgroundLight,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,

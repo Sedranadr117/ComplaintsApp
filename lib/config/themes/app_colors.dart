@@ -12,7 +12,8 @@ class AppColors {
   static const Color secondaryVariant = Color(0xFF5BA0AD);
 
   // Backgrounds (فاتحة جداً لتفتح النفس)
-  static const Color backgroundLight = Color(0xFFF4FAFB);
+  static const Color backgroundLight = Color(0xfff3f4f6);
+  static const Color background = Color(0xfff3f4f6);
   static const Color surfaceLight = Color(0xFFE0EFF1);
   static const Color cardLight = Color(0xFFE0EFF1);
   static const Color dialogLight = Color(0xFFE0EFF1);
