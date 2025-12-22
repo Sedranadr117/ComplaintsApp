@@ -28,20 +28,22 @@ class ComplaintsBloc extends Bloc<ComplaintsEvent, ComplaintsState> {
         };
 
         final String? incomingFilter = event.status;
-        // If incomingFilter is null but we have a currentFilter, keep using currentFilter (pagination case)
-        final String? filterToUse = incomingFilter ?? currentFilter;
-        final bool filterChanged =
-            incomingFilter != null && incomingFilter != currentFilter;
+        
+        // Check if filter actually changed (including switching to "all" which is null)
+        final bool filterChanged = incomingFilter != currentFilter;
+        
+        // Determine which filter to use:
+        // - If incomingFilter is provided (including null for "all"), use it
+        // - If incomingFilter is null and no refresh, it's pagination - use currentFilter
+        final String? filterToUse = (event.refresh || filterChanged) 
+            ? incomingFilter  // Use incoming filter when refreshing or filter changed
+            : currentFilter;  // Keep current filter for pagination
 
         if (event.refresh || filterChanged) {
           currentPage = 0;
-          currentFilter = filterToUse;
+          currentFilter = filterToUse;  // This will be null when "all" is selected
           complaints.clear();
           emit(ComplaintLoading());
-        }
-        // For pagination, ensure currentFilter is preserved
-        else if (incomingFilter == null && currentFilter != null) {
-          // Pagination case - keep currentFilter as is
         }
 
         // Map Arabic filter text to API status code
