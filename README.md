@@ -59,8 +59,8 @@ The application provides a seamless and transparent digital channel for citizens
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Sedranadr117/ComplaintsApp.git
-   cd ComplaintsApp
+   git clone https://github.com/Sedranadr117/Mithaq.git
+   cd Mithaq
    ```
 
 2. **Install dependencies**
