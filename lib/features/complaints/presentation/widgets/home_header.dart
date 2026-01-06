@@ -2,8 +2,10 @@ import 'package:complaint_app/config/extensions/navigator.dart';
 import 'package:complaint_app/config/themes/app_colors.dart';
 import 'package:complaint_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:complaint_app/features/notification/presentation/bloc/notification_bloc.dart';
+import 'package:complaint_app/features/notification/presentation/bloc/notification_event.dart';
 import 'package:complaint_app/features/notification/presentation/bloc/notification_state.dart';
 import 'package:complaint_app/features/notification/presentation/pages/notification_page.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -119,6 +121,21 @@ class _HomeHeaderState extends State<HomeHeader> {
                               ),
                             ),
                             onPressed: () async {
+                              // Delete FCM token BEFORE logout (while auth token is still available)
+                              try {
+                                context.read<NotificationBloc>().add(
+                                  RemoveFcmTokenEvent(),
+                                );
+                                // Wait a bit for the request to complete
+                                await Future.delayed(
+                                  const Duration(milliseconds: 500),
+                                );
+                              } catch (e) {
+                                // Continue with logout even if FCM deletion fails
+                                debugPrint(
+                                  '⚠️ Failed to delete FCM token before logout: $e',
+                                );
+                              }
                               context.read<AuthBloc>().add(const LogoutEvent());
                               Navigator.pop(context);
                             },

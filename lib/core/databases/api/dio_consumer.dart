@@ -149,11 +149,26 @@ class DioConsumer extends ApiConsumer {
     try {
       final authHeader = await _getAuthorizationHeader();
 
+      // Ensure headers are properly set - include Content-Type like GET does
+      final headers = <String, dynamic>{
+        'Content-Type': 'application/json',
+        ...authHeader, // This will add Authorization if token exists
+      };
+
+      // Debug: Log if token is missing for authenticated endpoints
+      if (authHeader.isEmpty &&
+          !path.contains('login') &&
+          !path.contains('register')) {
+        debugPrint(
+          '⚠️ Warning: No auth token found for DELETE request to $path',
+        );
+      }
+
       var res = await dio.delete(
         path,
         data: data,
         queryParameters: queryParameters,
-        options: Options(headers: authHeader),
+        options: Options(headers: headers),
       );
       return res.data;
     } on DioException catch (e) {

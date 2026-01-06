@@ -7,8 +7,6 @@ import 'package:complaint_app/features/complaints/presentation/bloc/show_all/sho
 import 'package:complaint_app/features/complaints/presentation/pages/add_complaints_page.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/home_header.dart';
 import 'package:complaint_app/features/complaints/presentation/widgets/recent_complaint_tile.dart';
-import 'package:complaint_app/features/notification/presentation/bloc/notification_bloc.dart';
-import 'package:complaint_app/features/notification/presentation/bloc/notification_event.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -60,9 +58,14 @@ class _HomePageState extends State<HomePage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is LogoutSuccessState) {
+          // FCM token should already be deleted before logout (in home_header.dart)
+          // But try to delete Firebase token locally as a cleanup
+          try {
+            await FirebaseMessaging.instance.deleteToken();
+          } catch (e) {
+            debugPrint('⚠️ Failed to delete Firebase token: $e');
+          }
           context.pushReplacementPage(const WelcomeScreen());
-          context.read<NotificationBloc>().add(RemoveFcmTokenEvent());
-          await FirebaseMessaging.instance.deleteToken();
         } else if (state is AuthErrorState) {
           // Even if logout API fails, navigate to welcome screen since local data is cleared
           context.pushReplacementPage(const WelcomeScreen());

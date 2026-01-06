@@ -18,7 +18,12 @@ class SignUpParams {
     required this.password,
   });
   Map<String, dynamic> toJson() {
-    return {'firstName': firstName, 'lastName': lastName, 'email': email, 'password': password};
+    return {
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'password': password,
+    };
   }
 }
 
@@ -120,7 +125,7 @@ class DeleteFcmTokenParams {
   DeleteFcmTokenParams({required this.deviceToken});
 
   Map<String, dynamic> toJson() {
-    return {'deviceToken': deviceToken};
+    return {'token': deviceToken};
   }
 }
 
